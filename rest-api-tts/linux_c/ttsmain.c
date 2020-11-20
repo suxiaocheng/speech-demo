@@ -12,6 +12,8 @@
 const char TTS_SCOPE[] = "audio_tts_post";
 const char API_TTS_URL[] = "http://tsn.baidu.com/text2audio"; // 可改为https
 
+char *used_text = "xxx-suxch";
+
 RETURN_CODE fill_config(struct tts_config *config) {
     // 填写网页上申请的appkey 如 g_api_key="g8eBUMSokVB1BHGmgxxxxxx"
     char api_key[] = "4E1BG9lTnlSeIf1NQFlrSq6h";
@@ -20,7 +22,7 @@ RETURN_CODE fill_config(struct tts_config *config) {
 
     // text 的内容为"欢迎使用百度语音合成"的urlencode,utf-8 编码
     // 可以百度搜索"urlencode"
-    char text[] = "欢迎使用百度语音";
+    char *text = used_text;
 
     // 发音人选择, 基础音库：0为度小美，1为度小宇，3为度逍遥，4为度丫丫，
     // 精品音库：5为度小娇，103为度米朵，106为度博文，110为度小童，111为度小萌，默认为度小美 
@@ -37,8 +39,9 @@ RETURN_CODE fill_config(struct tts_config *config) {
     // 将上述参数填入config中
     snprintf(config->api_key, sizeof(config->api_key), "%s", api_key);
     snprintf(config->secret_key, sizeof(config->secret_key), "%s", secret_key);
-    snprintf(config->text, sizeof(text), "%s", text);
-    config->text_len = sizeof(text) - 1;
+    snprintf(config->text, strlen(text)+1, "%s", text);
+    config->text_len = strlen(text);
+    printf("text: %s, length: %d\n", config->text, config->text_len);
     snprintf(config->cuid, sizeof(config->cuid), "1234567C");
     config->per = per;
     config->spd = spd;
@@ -53,7 +56,10 @@ RETURN_CODE fill_config(struct tts_config *config) {
     return RETURN_OK;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc >= 2) {
+        used_text = argv[1];
+    }
     curl_global_init(CURL_GLOBAL_ALL);
     RETURN_CODE rescode = run();
     curl_global_cleanup();
